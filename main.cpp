@@ -36,16 +36,17 @@ void draw_rectangle(vector<uint32_t>&img,const size_t img_w,const size_t img_h, 
     for(size_t j=0;j<h;j++){
       size_t cx = x + i;
       size_t cy = y + j;
-      assert(cx < img_w && cy < img_h);
+      //assert(cx < img_w && cy < img_h);
+      if(cx >= img_w || cy >= img_h) continue;
       img[cx + cy*img_w] = color;
     }
   }
 }
 
 int main(){
-  const size_t win_w  = 512;
+  const size_t win_w  = 1024;
   const size_t win_h  = 512;
-  vector<uint32_t>framebuffer(win_w*win_h,255);
+  vector<uint32_t>framebuffer(win_w*win_h,pack_color(255,255,255));
 
   const size_t map_w = 16;
   const size_t map_h = 16;
@@ -83,7 +84,7 @@ int main(){
       framebuffer[i+j*win_w] = pack_color(r,g,b);
     }
   }
-  const size_t rect_w = win_w/map_w;
+  const size_t rect_w = win_w/(map_w*2);
   const size_t rect_h = win_h/map_h;
   for(size_t j=0;j< map_h; ++j){
     for(size_t i=0; i < map_w; ++i){
@@ -95,19 +96,24 @@ int main(){
   }
 
   //player
-  draw_rectangle(framebuffer,win_w,win_h,player_x*rect_w,player_y*rect_h,5,5,pack_color(255,215,0));
+  //draw_rectangle(framebuffer,win_w,win_h,player_x*rect_w,player_y*rect_h,5,5,pack_color(255,215,0));
 
-  for(size_t i=0; i<win_w; i++){
+  for(size_t i=0; i<win_w/2; i++){ // visibility cone
     float angle = player_a -fov/2 + fov*i/float(win_w);
   
 
   for(float t=0; t<20; t+=.05) {
     float cy = player_y + t*sin(angle);
     float cx = player_x + t*cos(angle);
-    if(map[int(cx)+int(cy)*map_w]!=' ')break;
+    
     size_t pix_x = cx*rect_w;
     size_t pix_y = cy*rect_h;
-    framebuffer[pix_x + pix_y*win_w] = pack_color(255,255,255);
+    framebuffer[pix_x + pix_y*win_w] = pack_color(160,160,160); //draws
+    if(map[int(cx)+int(cy)*map_w]!=' '){
+      size_t column_height = win_h/t;
+      draw_rectangle(framebuffer,win_w,win_h,win_w/2+i,win_h/2-column_height/2,1,column_height,pack_color(0,255,255));
+      break;
+    }
   }
 }
 
